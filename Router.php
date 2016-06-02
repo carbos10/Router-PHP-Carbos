@@ -1,4 +1,7 @@
 <?php
+
+namespace Framework;
+
 /**
  *
  *  A Simple Static Route for PHP
@@ -8,11 +11,16 @@
  *  @version 1.0.0
  *
  */
-class Route {
+class Router {
   /**
    * @var string  contain the REQUEST_METHOD
    */
   private static $method;
+
+  /**
+   *  @var string   contain the base dir
+   */
+  private static $baseDir;
 
   /**
    * @var string  contain the REQUEST_URI
@@ -76,8 +84,7 @@ class Route {
    */
   private static function run($callback, $url)
   {
-    $pattern = "#^".self::$group.$url."$#";
-
+    $pattern = "#^/".trim(self::$baseDir.self::$group.$url, "/")."$#";
     if(preg_match_all($pattern , self::$uri, $array, PREG_SET_ORDER) == true)
     {
       self::$flag = true;
@@ -96,9 +103,26 @@ class Route {
    */
   public static function group($string, $callback)
   {
-    self::$group = $string;
-    call_user_func($callback);
-    self::$group = null;
+    self::getRequestUri();
+    $pattern = "#^".self::$baseDir.self::$group.$string."#";
+    if(preg_match_all($pattern, self::$uri, $arr, PREG_SET_ORDER) == true){
+      $temp = self::$group;
+      self::$group = self::$group.$string;
+      call_user_func($callback);
+      self::$group = $temp;
+    }
+  }
+
+  /**
+   *  Set the base Directory
+   *
+   *  @param string $string   Set the value of base directory
+   *
+   *  @return void
+   */
+  public static function baseDir($string)
+  {
+    self::$baseDir = $string;
   }
 
   /**
